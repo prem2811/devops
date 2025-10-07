@@ -40,12 +40,11 @@ pipeline {
     stage('Deploy to k8s') {
       steps {
         script {
-          // Replace placeholder in k8s deployment with the pushed image and apply
-          sh """
-            sed 's|DOCKER_IMAGE_PLACEHOLDER|${IMAGE_TAG}|g' k8s/deployment.yaml > k8s/deployment-applied.yaml
-            kubectl apply -f k8s/deployment-applied.yaml
-            kubectl apply -f k8s/service.yaml
-          """
+            sh '''
+            echo "Deploying to Kubernetes..."
+            sed 's|DOCKER_IMAGE_PLACEHOLDER|prem2811/hello-java:${BUILD_NUMBER}|g' k8s/deployment.yaml > k8s/deployment-applied.yaml
+            kubectl --kubeconfig=/var/lib/jenkins/.kube/config apply -f k8s/deployment-applied.yaml
+            '''
         }
       }
     }
