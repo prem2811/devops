@@ -1,7 +1,7 @@
 pipeline {
   agent any
   environment {
-    IMAGE_NAME = "prem2811/hello-java"
+    def IMAGE_NAME = "prem2811/hello-java"
   }
   stages {
     stage('Checkout') { steps { checkout scm } }
