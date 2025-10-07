@@ -28,7 +28,7 @@ pipeline {
                 def IMAGE_TAG = "16" // or use a dynamic tag, e.g., BUILD_NUMBER
                 
                 sh 'echo "Logging into Docker Hub..."'
-                sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+                sh 'docker login -u $DOCKER_USER -p $DOCKER_PSW'
                 
                 // Push the image
                 sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
