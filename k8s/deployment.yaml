@@ -17,4 +17,4 @@ spec:
         image: DOCKER_IMAGE_PLACEHOLDER   # Jenkins will replace with actual image:tag
         ports:
         - containerPort: 8080
-        -nodePort: 32180
+          nodePort: 32180
