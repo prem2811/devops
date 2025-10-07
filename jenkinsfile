@@ -1,57 +1,57 @@
 pipeline {
-    agent any
-    environment {
-        IMAGE_NAME = "prem2811/hello-java"
+  agent any
+  environment {
+    def IMAGE_NAME = "prem2811/hello-java"
+    KUBECONFIG = "/var/lib/jenkins/.kube/config"
+
+  }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+
+    stage('Build JAR') {
+      steps { sh 'mvn -B -DskipTests package' }
     }
-    stages {
-        stage('Checkout') {
-            steps { 
-                checkout scm 
-            }
-        }
 
-        stage('Build JAR') {
-            steps { 
-                sh 'mvn -B -DskipTests package' 
-            }
-        }
-
-        stage('Build Image') {
-            steps {
-                script {
+    stage('Build Image') {
+      steps {
+        script {
                     // Use 'def' to declare the variable
                     def IMAGE_TAG = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
                     // Export IMAGE_TAG for next stages
                     env.IMAGE_TAG = IMAGE_TAG
                     sh "docker build -t ${IMAGE_TAG} ."
                 }
-            }
-        }
-
-        stage('Push Image') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PSW', usernameVariable: 'DOCKER_USER')]) {
-                    sh '''
-                        echo $DOCKER_PSW | docker login -u $DOCKER_USER --password-stdin
-                        docker push $IMAGE_TAG
-                        docker logout
-                    '''
-                }
-            }
-        }
-
-        stage('Deploy to k8s') {
-            steps {
-                script {
-                    // Replace placeholder in k8s deployment with actual image tag
-                    sh """
-                        sed 's|DOCKER_IMAGE_PLACEHOLDER|$IMAGE_TAG|g' k8s/deployment.yaml > k8s/deployment-applied.yaml
-                        sudo k3s kubectl apply -f k8s/deployment-applied.yaml
-                        sudo k3s kubectl apply -f k8s/service.yaml
-                    """
-                }
-            }
-        }
+      }
     }
-}
 
+    stage('Push Image') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PSW', usernameVariable: 'DOCKER_USER')]) {
+          script {
+                // Define image name and tag
+                def IMAGE_NAME = "prem2811/hello-java"
+                def IMAGE_TAG = "16" // or use a dynamic tag, e.g., BUILD_NUMBER
+                
+                sh 'echo "Logging into Docker Hub..."'
+                sh 'docker login -u $DOCKER_USER -p $DOCKER_PSW'
+                
+                // Push the image
+                sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+            }
+        }
+      }
+    }
+
+    stage('Deploy to k8s') {
+      steps {
+        script {
+            sh '''
+            echo "Deploying to Kubernetes..."
+            sed 's|DOCKER_IMAGE_PLACEHOLDER|prem2811/hello-java:${BUILD_NUMBER}|g' k8s/deployment.yaml > k8s/deployment-applied.yaml
+            kubectl --kubeconfig=/var/lib/jenkins/.kube/config apply -f k8s/deployment-applied.yaml
+            '''
+        }
+      }
+    }
+  }
+}
