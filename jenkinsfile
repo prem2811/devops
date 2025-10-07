@@ -1,7 +1,7 @@
 pipeline {
   agent any
   environment {
-    IMAGE_NAME = "DOCKERHUB_USER/hello-java"
+    IMAGE_NAME = "prem2811/hello-java"
   }
   stages {
     stage('Checkout') { steps { checkout scm } }
