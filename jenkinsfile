@@ -22,11 +22,17 @@ pipeline {
     stage('Push Image') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PSW', usernameVariable: 'DOCKER_USER')]) {
-          sh '''
-            echo "$DOCKER_PSW" | docker login -u "$DOCKER_USER" --password-stdin
-            docker push ${IMAGE_TAG}
-            docker logout
-          '''
+          script {
+                // Define image name and tag
+                def IMAGE_NAME = "prem2811/hello-java"
+                def IMAGE_TAG = "16" // or use a dynamic tag, e.g., BUILD_NUMBER
+                
+                sh 'echo "Logging into Docker Hub..."'
+                sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+                
+                // Push the image
+                sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+            }
         }
       }
     }
