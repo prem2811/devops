@@ -48,6 +48,11 @@ pipeline {
                 }
             }
         }
+        stage('Deploy Service') {
+            steps {
+                sh "kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/service.yaml"
+            }
+        }
 
         stage('Check Pods') {
             steps {
