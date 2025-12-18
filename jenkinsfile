@@ -7,7 +7,7 @@ pipeline
         {
             steps {
                 echo "hello success pipeline"
-                git 'https://github.com/prem2811/devops.git'
+                
             }
         }
         stage('Build')
