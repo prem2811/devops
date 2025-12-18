@@ -1,62 +1,19 @@
-pipeline {
-    agent any
-
-    environment {
-        IMAGE_NAME = "prem2811/hello-java"
-        KUBECONFIG = "/var/lib/jenkins/.kube/config"
-    }
-
-    stages {
-        stage('Build JAR') {
+pipeline
+{
+    agent any 
+    
+    stages{
+        stage('Checkout')
+        {
             steps {
-                sh 'mvn clean package -DskipTests'
+                echo "hello success pipeline"
+                git 'https://github.com/prem2811/devops.git'
             }
         }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    def imageTag = "${IMAGE_NAME}:${BUILD_NUMBER}"
-                    sh "docker build -t ${imageTag} ."
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', 
-                                                  usernameVariable: 'DOCKER_USER', 
-                                                  passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
-                }
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    // Replace image placeholder and save to applied file
-                    sh """sed "s|DOCKER_IMAGE_PLACEHOLDER|${IMAGE_NAME}:${BUILD_NUMBER}|g" \
-                        k8s/deployment.yaml > k8s/deployment-applied.yaml"""
-
-                    // Apply updated deployment
-                    sh "kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/deployment-applied.yaml"
-
-                    // Force rollout to ensure new image is deployed
-                    sh "kubectl --kubeconfig=${KUBECONFIG} rollout restart deployment hello-deploy"
-                }
-            }
-        }
-        stage('Deploy Service') {
-            steps {
-                sh "kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/service.yaml"
-            }
-        }
-
-        stage('Check Pods') {
-            steps {
-                sh "kubectl --kubeconfig=${KUBECONFIG} get pods -o wide"
+        stage('Build')
+        {
+            steps{
+                echo "build"
             }
         }
     }
